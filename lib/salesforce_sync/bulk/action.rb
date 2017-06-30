@@ -61,7 +61,7 @@ module SalesforceSync
       end
 
       def resources_by_class
-        SalesforceSync.config.resources_by_class
+        SalesforceSync::Rsource::Base.sf_classes_by_resource_class
       end
     end
   end

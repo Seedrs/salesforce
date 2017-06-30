@@ -6,7 +6,7 @@ module SalesforceSync
       end
 
       def self.sf_class(resource_class)
-        resource_by_class = SalesforceSync.config.resources_by_class.find do |klass, _sf_class|
+        resource_by_class = SalesforceSync::Rsource::Base.sf_classes_by_resource_class.find do |klass, _sf_class|
           resource_class <= klass
         end
 
@@ -18,7 +18,7 @@ module SalesforceSync
       end
 
       def self.resource_class(sf_class)
-        resource_by_class = SalesforceSync.config.resources_by_class.find{ |_klass, sf_klass| sf_klass.to_s == sf_class.to_s }
+        resource_by_class = SalesforceSync::Rsource::Base.sf_classes_by_resource_class.find{ |_klass, sf_klass| sf_klass.to_s == sf_class.to_s }
 
         if resource_by_class.present?
           class_constant(resource_by_class[0])

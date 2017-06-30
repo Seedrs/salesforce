@@ -14,6 +14,7 @@ require "salesforce_sync/resource/queue_item"
 require "salesforce_sync/resource/identifier"
 require "salesforce_sync/resource/factory"
 require "salesforce_sync/resource/base"
+require "salesforce_sync/resource"
 
 require "salesforce_sync/bulk/action"
 require "salesforce_sync/bulk/queue_item"
@@ -32,7 +33,7 @@ module SalesforceSync
   def self.start
     return unless config.active
 
-    config.events.each do |event_name|
+    SalesforceSync::Resource.events.each do |event_name|
       EventBus.subscribe(event_name) do |payload|
         if payload[:resource].present?
           Resource::Event.new(event_name, payload[:resource], payload[:changed_attributes]).push

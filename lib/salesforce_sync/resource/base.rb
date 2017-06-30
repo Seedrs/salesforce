@@ -1,14 +1,38 @@
 module SalesforceSync
   module Resource
     class Base
+      PROPERTIES_KEYS = %i(sf_type resource_class resource_id_name events)
+
+      def self.properties
+        SalesforceSync::Error.new("properties method not implemented", self.class).raise_error
+      end
+
+      def self.property(key)
+        if properties[key].present?
+          properties[key]
+        else
+          SalesforceSync::Error.new("#{key} property not provided", self.class).raise_error
+        end
+      end
+
       # sf_type: the name of the resource on Salesforce side
       def self.sf_type
-        SalesforceSync::Error.new("sf_type method not implemented", self.class).raise_error
+        property(:sf_type)
       end
 
       # resource_id_name: the name of the id of the resource on Salesforce side
       def self.resource_id_name
-        SalesforceSync::Error.new("resource_id_name method not implemented", self.class).raise_error
+        property(:resource_id_name)
+      end
+
+      # resource_class: the class of the resource in the application
+      def self.resource_class
+        property(:resource_class)
+      end
+
+      # events: the list of the events the application should subscribe to
+      def self.events
+        property(:events)
       end
 
       # All fields to send to Salesforce
@@ -75,11 +99,7 @@ module SalesforceSync
       attr_reader :resource_id, :identifier
 
       def resource
-        @resource ||= begin
-          # Resource class may change during its life cycle, thus to find the resource we should refer to the main class
-          # defined in the class mapping
-          Factory.resource_class(self.class).find_by_id(resource_id)
-        end
+        @resource ||= self.class.resource_class.find_by_id(resource_id)
       end
 
       def all_prepared_fields

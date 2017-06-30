@@ -24,7 +24,7 @@ module SalesforceSync
     end
 
     def self.platform_reset
-      platform_ids_by_class = SalesforceSync.config.resources_by_class.keys.each_with_object(Hash.new{ |h, k| h[k] = [] }) do |klass, ids|
+      platform_ids_by_class = SalesforceSync::Rsource::Base.sf_classes_by_resource_class.keys.each_with_object(Hash.new{ |h, k| h[k] = [] }) do |klass, ids|
         ids[klass] = klass.pluck(:id)
       end
 
