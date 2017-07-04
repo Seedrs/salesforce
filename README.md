@@ -1,7 +1,5 @@
 # SalesforceSync
 
-_Note: the first version of the gem is still under development_
-
 SalesforceSync gem provides three set of features:
 - an event based architecture to handle asynchronous Rails resource synchronisation on Salesforce
 - a set of actions to trigger on demand bulk synchronisation
@@ -154,7 +152,43 @@ Now that `SalesforceSync` knows how to build a Salesforce Contact from a `User`,
 
 ### Configuration
 
-TODO: Write Configuration documentation here
+Here is the list of configurable parameters:
+
+- `resources_by_class`: mapping between application model classes and their corresponding `SalesforceSync::Resource::Base` child.
+Default: `{}`
+Required field.
+
+- `events`: the list of events on which `SalesforceSync` should trigger resource upsert or destroy.
+Default: `[]`
+Required field.
+
+- `salesforce_url`: the base url of the Salesforce account.
+Default: `"""`
+Required field.
+
+- `active`: if set to `false`, `SalesforceSync` does not trigger any event based resource synchronisation.
+Default: `true`
+
+- `raise_on_airbrake`: if set to `true`, `SalesforceSync` errors are raised on Airbrake.
+Default: `false`
+
+- `job_identifier_column`: `SalesforceSync` uses a parameter on the Delayed::Job` object to identify which resource is waiting to be synced.
+`job_identifier_column`, specify which database column to use. If using `:queue` does not suit the Rails app, configure another column. 
+Default: `:queue`
+
+- `api_version`: Salesforce api version
+Default: `36.0`
+
+- `queue_waiting_time`: in order to optimize the number of api calls, `SalesforceSync` waits between the moment the event is triggered and the execution of the job.
+Default: `1.minute`
+
+- `destroy_event_suffixes`: `SalesforceSync` distinguishes between an upsert and a destroy event based on the end of the event name.
+`destroy_event_suffixes` is the list of endings reconginzed as destroy events
+Default: `%w(.destroy .destroyed)`
+
+- `upsert_event_suffixes`: `SalesforceSync` distinguish between a upsert and a destroy event based on the end of the event name.
+`upsert_event_suffixes` is the list of endings reconginzed as upsert events
+Default: `%w(.save .create update .saved .created .updated)`
 
 ### SalesforceSync::Resource::Base api
 
