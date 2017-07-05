@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    salesforce_sync (1.0.1)
+    salesforce_sync (1.0.2)
       delayed_job_active_record (>= 4.1.1)
       event_bus (>= 1.1.1)
       rails (>= 3.0)
@@ -61,15 +61,15 @@ GEM
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.11.0.1)
       faraday (>= 0.7.4, < 1.0)
-    globalid (0.3.7)
-      activesupport (>= 4.1.0)
+    globalid (0.4.0)
+      activesupport (>= 4.2.0)
     hashie (3.5.5)
     hike (1.2.3)
     i18n (0.8.4)
     json (1.8.6)
     loofah (2.0.3)
       nokogiri (>= 1.5.9)
-    mail (2.6.4)
+    mail (2.6.6)
       mime-types (>= 1.16, < 4)
     method_source (0.8.2)
     mime-types (2.99.3)
