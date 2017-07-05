@@ -44,7 +44,7 @@ module SalesforceSync
       def push_upsert_event
         if sf_resource.require_upsert?(event_name, changed_attributes)
           sf_resource.dependent_resources.each do |dependent_resource|
-            unless SalesforceSync::Api.synchronised?(dependent_resource)
+            if dependent_resource.present? && !SalesforceSync::Api.synchronised?(dependent_resource)
               QueueItem.new(dependent_resource).push_upsert(true)
             end
           end

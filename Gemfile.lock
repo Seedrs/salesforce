@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    salesforce_sync (1.0.0)
+    salesforce_sync (1.0.1)
       delayed_job_active_record (>= 4.1.1)
       event_bus (>= 1.1.1)
       rails (>= 3.0)

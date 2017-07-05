@@ -82,6 +82,23 @@ describe SalesforceSync::Resource::Event do
             expect(queue_item).to have_received(:push_upsert)
           end
         end
+
+        context "when one dependent resource is nil" do
+          let(:dependent_resources){ [double("dependent_1"), nil] }
+          let(:dependent_resource_queue_items){ [double("dependent_queue_item_1"), double("dependent_queue_item_2")] }
+
+          context "when the dependent resources are not yet synchronised" do
+            let(:dependent_synchronised?){ false }
+
+            it "push upsert for the present dependent and the resource" do
+              instance.push
+              expect(queue_item).to have_received(:push_upsert)
+              expect(dependent_resource_queue_items[0]).to have_received(:push_upsert).with(true)
+              expect(SalesforceSync::Api).not_to receive(:synchronised?).with(nil)
+              expect(dependent_resource_queue_items[1]).not_to have_received(:push_upsert)
+            end
+          end
+        end
       end
 
       context "when the resource does not require to be upserted" do
