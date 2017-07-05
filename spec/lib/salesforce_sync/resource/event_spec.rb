@@ -17,7 +17,7 @@ describe SalesforceSync::Resource::Event do
     context "when the event is a destroy event" do
       let(:event_name){ "resource.destroy" }
 
-      it "pull upsert job and push a destroy in the queue" do
+      it "pulls upsert job and push a destroy in the queue" do
         allow(queue_item).to receive(:pull_upsert)
         allow(queue_item).to receive(:push_destroy)
 
@@ -51,7 +51,7 @@ describe SalesforceSync::Resource::Event do
           context "when the dependent resources are not yet synchronised" do
             let(:dependent_synchronised?){ false }
 
-            it "push upsert for the dependent and the resource" do
+            it "pushes upsert for the dependent and the resource" do
               instance.push
               expect(queue_item).to have_received(:push_upsert)
               dependent_resource_queue_items.each do |dependent_resource_queue_item|
@@ -63,7 +63,7 @@ describe SalesforceSync::Resource::Event do
           context "when the dependent resources are synchronised" do
             let(:dependent_synchronised?){ true }
 
-            it "push upsert only the resource" do
+            it "pushes upsert only the resource" do
               instance.push
               expect(queue_item).to have_received(:push_upsert)
               dependent_resource_queue_items.each do |dependent_resource_queue_item|
@@ -90,7 +90,7 @@ describe SalesforceSync::Resource::Event do
           context "when the dependent resources are not yet synchronised" do
             let(:dependent_synchronised?){ false }
 
-            it "push upsert for the present dependent and the resource" do
+            it "pushes upsert for the present dependent and the resource" do
               instance.push
               expect(queue_item).to have_received(:push_upsert)
               expect(dependent_resource_queue_items[0]).to have_received(:push_upsert).with(true)
