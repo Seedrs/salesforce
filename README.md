@@ -173,10 +173,10 @@ Default: `true`
 Default: `false`
 
 - `job_identifier_column`: `SalesforceSync` uses a parameter on the Delayed::Job` object to identify which resource is waiting to be synced.
-`job_identifier_column`, specify which database column to use. If using `:queue` does not suit the Rails app, configure another column. 
+`job_identifier_column`, specify which database column to use. If using `:queue` does not suit the Rails app, configure another column.
 Default: `:queue`
 
-- `api_version`: Salesforce api version
+- `api_version`: Salesforce api version.
 Default: `36.0`
 
 - `queue_waiting_time`: in order to optimize the number of api calls, `SalesforceSync` waits between the moment the event is triggered and the execution of the job.
@@ -187,21 +187,57 @@ Default: `1.minute`
 Default: `%w(.destroy .destroyed)`
 
 - `upsert_event_suffixes`: `SalesforceSync` distinguish between a upsert and a destroy event based on the end of the event name.
-`upsert_event_suffixes` is the list of endings reconginzed as upsert events
+`upsert_event_suffixes` is the list of endings reconginzed as upsert events.
 Default: `%w(.save .create update .saved .created .updated)`
 
 ### SalesforceSync::Resource::Base api
 
-TODO: Write SalesforceSync::Resource::Base documentation here
+`SalesforceSync::Resource::Base` child are used to link Rails ActiveRecord resources with Salesforce objects.
+Here are the method that should or could be implemented.
+
+`#sf_type`: the name of the resource on Salesforce side. Ex: `Contact`
+
+`#resource_id_name`: the name of the field used as external id on Salesforce side. Ex: `User_ID__c`
+
+`.all_fields` : all fields to send to Salesforce. Ex: `{ User_ID__c: resource.id, FirstName: resource.first_name }`
+
+`.require_upsert?(_event = nil, _changed_attributes = {})`: specify when to trigger an upsert based on the event and the attributes changed.
+Default: `true`
+
+`.dependent_resources`: specify the list of resource that need to be synced with Salesforce before the current resource.
+Default: `[]`
+
+`.after_upsert` : callback executed after upsert.
+Default: nothing is executed.
+
 
 ### SalesforceSync::Api
 
-TODO: Write SalesforceSync::Api documentation here
+`SalesforceSync::Api` allows to trigger some synchornisation or to get some information outside the event base synchronisation context.
+
+`#resource_synchronisation(resource)` : force the synchronisation of the resource (create or update).
+
+`#bulk_synchronisation(ids_by_class)` : force the synchronisation of a group of resource.
+
+`#synchronised?(resource)` : is the resource synchronised ? Careful, the search is based on the Salesforce ids stored in the db, it does not to an actual call to Salesforce.
+
+`#salesforce_id(resource)` : get the salesforce id of the resource.
+
+`#url(resource)` : get the url of the resource on Salesforce if it is synchronised. The base Salesforce url needs to be configured.
+
+`#platform_reset` : Delete all Salesforce ids stored and bulk sync all the resources. 
+Warning: this is a destructive action. It is mainly useful to populate a Salesforce Sandbox.
+
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/Seedrs/salesforce.
-_For pull request do not forget to update and add rspec tests in the spec folder._
+
+To run rspec tests execute :
+
+    $ rspec spec/
+
+_For pull requests do not forget to update and add rspec tests in the spec folder._
 
 ## License
 
