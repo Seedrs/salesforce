@@ -18,7 +18,7 @@ module SalesforceSync
         ::Airbrake.notify(self.class, options)
       end
 
-        raise error_message
+      raise error_message
     end
 
     def error_message
