@@ -11,6 +11,11 @@ module SalesforceSync
       SalesforceSync::Resource::Action.new(sf_class, resource).get
     end
 
+    # Select query on Salesforce
+    def self.select(query)
+      SalesforceSync::Resource::Action.select(query)
+    end
+
     # Trigger the upsert of a group of resources
     def self.bulk_synchronisation(ids_by_class)
       SalesforceSync::Bulk::Action.new(ids_by_class: ids_by_class).synchronise

@@ -109,4 +109,32 @@ describe SalesforceSync::Resource::Action do
       end
     end
   end
+
+  describe "#select" do
+    let(:client){ double("client") }
+    let(:query){ "Select Id from Account where Email != null" }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:client).and_return(client)
+      allow(client).to receive(:query).with(query).and_return(collection)
+    end
+
+    context "when the query returns some elements" do
+      let(:collection){ [{ a: 1 }, { a: 2 }] }
+
+      it "returns the elements" do
+        elements = described_class.select(query)
+        expect(elements).to eq(collection)
+      end
+    end
+
+    context "when the query returns nothing" do
+      let(:collection){ [] }
+
+      it "returns an empty array" do
+        elements = described_class.select(query)
+        expect(elements).to eq([])
+      end
+    end
+  end
 end

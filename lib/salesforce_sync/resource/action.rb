@@ -1,7 +1,7 @@
 module SalesforceSync
   module Resource
     class Action
-      def initialize(sf_class, resource_id)
+      def initialize(sf_class = nil, resource_id = nil)
         @sf_class = sf_class
         @resource_id = resource_id
       end
@@ -25,6 +25,15 @@ module SalesforceSync
         if sf_resource.synchronised?
           restforce_object = client.find(sf_class.sf_type, sf_resource.salesforce_id)
           restforce_object.to_hash.deep_symbolize_keys if restforce_object.present?
+        end
+      end
+
+      def self.select(query)
+        collection = new.send("client").query(query)
+        return [] if collection.size == 0
+
+        collection.map do |record|
+          record.to_hash.deep_symbolize_keys
         end
       end
 

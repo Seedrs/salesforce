@@ -40,6 +40,16 @@ describe SalesforceSync::Api do
     end
   end
 
+  describe "#select" do
+    it "calls SalesforceSync::Resource::Action#select" do
+      query = "query"
+      allow(SalesforceSync::Resource::Action).to receive(:select).with(query)
+
+      described_class.select(query)
+      expect(SalesforceSync::Resource::Action).to have_received(:select).with(query)
+    end
+  end
+
   describe "#synchronised?" do
     it "calls synchronised? on the sf_resource" do
       resource = double("resource")
