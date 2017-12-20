@@ -76,4 +76,37 @@ describe SalesforceSync::Resource::Action do
       end
     end
   end
+
+  describe "#get" do
+    let(:client){ double("client") }
+    let(:sf_class){ double("sf_class", sf_type: "sf_type") }
+    let(:resource){ double("resource", id: 1234) }
+    let(:sf_resource){ double("sf_resource", synchronised?: synchronised?, salesforce_id: "sf_id") }
+    let(:synchronised?){ true }
+    let(:identifiers){ double("identifiers") }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:client).and_return(client)
+      allow(sf_class).to receive(:new).and_return(sf_resource)
+      allow(client).to receive(:find).with("sf_type", "sf_id")
+      allow(SalesforceSync::Resource::Identifier).to receive(:where).with(salesforce_id: "sf_id").and_return(identifiers)
+    end
+
+    context "when the resource is synced on Salesforce" do
+      let(:synchronised?){ true }
+
+      it "finds the resource on Salesforce" do
+        described_class.new(sf_class, resource.id).get
+        expect(client).to have_received(:find).with("sf_type", "sf_id")
+      end
+    end
+
+    context "when the resource is not synced on Salesforce" do
+      let(:synchronised?){ false }
+
+      it "does not returns nil" do
+        expect(described_class.new(sf_class, resource.id).get).to be_nil
+      end
+    end
+  end
 end

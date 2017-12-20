@@ -26,6 +26,20 @@ describe SalesforceSync::Api do
     end
   end
 
+  describe "#get" do
+    it "calls get on the resource action" do
+      resource = double("resource", class: "resource_class")
+      sf_class = double("sf_class")
+      action = double("action")
+      allow(SalesforceSync::Resource::Factory).to receive(:sf_class).and_return(sf_class)
+      allow(SalesforceSync::Resource::Action).to receive(:new).with(sf_class, resource).and_return(action)
+      allow(action).to receive(:get)
+
+      described_class.get(resource)
+      expect(action).to have_received(:get)
+    end
+  end
+
   describe "#synchronised?" do
     it "calls synchronised? on the sf_resource" do
       resource = double("resource")

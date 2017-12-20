@@ -21,6 +21,13 @@ module SalesforceSync
         end
       end
 
+      def get
+        if sf_resource.synchronised?
+          restforce_object = client.find(sf_class.sf_type, sf_resource.salesforce_id)
+          restforce_object.to_hash.deep_symbolize_keys if restforce_object.present?
+        end
+      end
+
       private
 
       attr_reader :sf_class, :resource_id, :salesforce_id

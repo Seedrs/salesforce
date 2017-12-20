@@ -5,6 +5,12 @@ module SalesforceSync
       SalesforceSync::Resource::QueueItem.new(resource).push_upsert(true)
     end
 
+    # Returns a hash of the resource on Salesforce
+    def self.get(resource)
+      sf_class = SalesforceSync::Resource::Factory.sf_class(resource.class)
+      SalesforceSync::Resource::Action.new(sf_class, resource).get
+    end
+
     # Trigger the upsert of a group of resources
     def self.bulk_synchronisation(ids_by_class)
       SalesforceSync::Bulk::Action.new(ids_by_class: ids_by_class).synchronise
