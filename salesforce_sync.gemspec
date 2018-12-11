@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "rails", [">= 3.0"]
   s.add_runtime_dependency "delayed_job_active_record", [">= 4.1.1"]
   s.add_runtime_dependency "event_bus", [">= 1.1.1"]
-  s.add_runtime_dependency "restforce", [">= 2.2.0"]
+  s.add_runtime_dependency "restforce", [">= 3.0.0"]
   s.add_runtime_dependency "salesforce_bulk_api", [">= 0.0.12"]
 
   s.add_development_dependency "rspec", [">= 3.5"]
