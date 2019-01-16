@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "event_bus", [">= 1.1.1"]
   s.add_runtime_dependency "restforce", [">= 3.0.0"]
   s.add_runtime_dependency "salesforce_bulk_api", [">= 0.0.12"]
+  s.add_runtime_dependency "sprockets",[">= 2.12.5"]
 
   s.add_development_dependency "rspec", [">= 3.5"]
   s.add_development_dependency "timecop", [">= 0.6.3"]
