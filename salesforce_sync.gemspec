@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency "rails", [">= 4.2.11", "< 5.0"]
+  s.add_runtime_dependency "rails", [">= 4.2.11", "< 5.1"]
   s.add_runtime_dependency "delayed_job_active_record", [">= 4.1.1"]
   s.add_runtime_dependency "event_bus", [">= 1.1.1"]
   s.add_runtime_dependency "restforce", [">= 3.0.0"]
