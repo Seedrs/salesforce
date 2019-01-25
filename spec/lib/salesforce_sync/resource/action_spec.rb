@@ -137,4 +137,22 @@ describe SalesforceSync::Resource::Action do
       end
     end
   end
+
+  describe "#publish_event" do
+    let(:client) { double("client") }
+    let(:event_name) { "custom_event" }
+    let(:payload) { { "custom_fieldA" => "Custom field A", "custom_fieldB" => "Custom field B" } }
+
+    before do
+      response = double("response")
+      allow(response).to receive(:body).and_return(::Restforce::Mash.new)
+      allow(client).to receive(:api_post).and_return(response)
+      allow(Restforce).to receive(:new).and_return(client)
+    end
+
+    it "calls api_post on Restforce client" do
+      described_class.publish_event(event_name, payload)
+      expect(client).to have_received(:api_post).with("sobjects/#{event_name}", payload)
+    end
+  end
 end

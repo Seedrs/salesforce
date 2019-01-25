@@ -86,6 +86,19 @@ describe SalesforceSync::Api do
     end
   end
 
+  describe "#publish_event" do
+    let(:event_name) { "custom_event" }
+    let(:payload) { { "custom_fieldA" => "Custom field A", "custom_fieldB" => "Custom field B" } }
+
+    before do
+      allow(SalesforceSync::Resource::Action).to receive(:publish_event).with(event_name, payload)
+    end
+    it "calls SalesforceSync::Resource::Action#publish_event" do
+      described_class.publish_event(event_name, payload)
+      expect(SalesforceSync::Resource::Action).to have_received(:publish_event).with(event_name, payload)
+    end
+  end
+
   describe "#platform_reset" do
     it "destroys all identifier and bulk synchronise all resources" do
       resource_ids = [1, 2, 3, 4]

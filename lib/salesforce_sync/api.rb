@@ -39,6 +39,13 @@ module SalesforceSync
       sf_resource.url
     end
 
+    # Adds a event to the Salesforce EventBus
+    # Raises exceptions if an error is returned from Salesforce
+    # Returns true on success
+    def self.publish_event(event_name, payload)
+      SalesforceSync::Resource::Action.publish_event(event_name, payload)
+    end
+
     # Synchronise all existing resources to Salesforce
     # Be carreful: it destroys all existing Salesforce ids
     # Useful in test environment to fill the records of a Sandbox

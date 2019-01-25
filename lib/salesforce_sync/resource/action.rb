@@ -37,6 +37,10 @@ module SalesforceSync
         end
       end
 
+      def self.publish_event(event_name, payload)
+        new.send("client").api_post("sobjects/#{event_name}", payload).body.success
+      end
+
       private
 
       attr_reader :sf_class, :resource_id, :salesforce_id
