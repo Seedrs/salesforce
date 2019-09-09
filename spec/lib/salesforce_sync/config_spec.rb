@@ -10,7 +10,7 @@ describe SalesforceSync::Config do
       active: true,
       raise_on_airbrake: false,
       job_identifier_column: :queue,
-      api_version: "36.0",
+      api_version: "44.0",
       salesforce_url: "",
       queue_waiting_time: 1.minute,
       destroy_event_suffixes: %w(.destroy .destroyed),

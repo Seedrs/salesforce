@@ -1,4 +1,4 @@
-require "rails"
+require "active_support"
 require "delayed_job_active_record"
 require "event_bus"
 require "restforce"
