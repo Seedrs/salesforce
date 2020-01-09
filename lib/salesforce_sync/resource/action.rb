@@ -1,16 +1,35 @@
 module SalesforceSync
   module Resource
     class Action
+      SF_USER_QUERY_TYPE = "Contact"
+
       def initialize(sf_class = nil, resource_id = nil)
         @sf_class = sf_class
         @resource_id = resource_id
       end
 
       def upsert
-        if sf_resource.resource.present?
-          salesforce_id = client.upsert!(sf_class.sf_type, sf_class.resource_id_name, sf_resource.all_prepared_fields)
-          sf_resource.store_salesforce_id(salesforce_id)
-          sf_resource.after_upsert
+        raise_missing_record unless sf_resource.resource.present?
+
+        if sf_resource.synchronised? || sf_class.sf_type != SF_USER_QUERY_TYPE
+          upsert_record
+        else
+          query = [
+            "select Id from #{SF_USER_QUERY_TYPE}",
+            "where email = '#{sf_resource.resource.email}'",
+            "AND State__c != 'disabled'"
+          ].join(" ")
+          result = self.class.select(query)
+
+          case result.size
+          when 0
+            upsert_record
+          when 1
+            update_record(result.first)
+          else
+            message = "#{SF_USER_QUERY_TYPE}: #{sf_resource.resource.id}, found duplicates: #{result.collect{|r| r[:Id]}}"
+            SalesforceSync::Error.new(message, self.class).raise_error
+          end
         end
       end
 
@@ -51,6 +70,22 @@ module SalesforceSync
 
       def sf_resource
         @sf_resource ||= sf_class.new(resource_id)
+      end
+
+      def upsert_record
+        salesforce_id = client.upsert!(sf_class.sf_type, sf_class.resource_id_name, sf_resource.all_prepared_fields)
+        sf_resource.store_salesforce_id(salesforce_id)
+        sf_resource.after_upsert
+      end
+
+      def update_record(data)
+        params = sf_resource.all_prepared_fields.merge(Id: data[:Id])
+        client.update!("#{SF_USER_QUERY_TYPE}", params)
+        sf_resource.store_salesforce_id(data[:Id])
+      end
+
+      def raise_missing_record
+        SalesforceSync::Error.new("Missing record: #{@sf_class.sf_type}", self.class).raise_error
       end
     end
   end

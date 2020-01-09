@@ -3,39 +3,125 @@ require "spec_helper"
 describe SalesforceSync::Resource::Action do
   describe "#upsert" do
     let(:client){ double("client") }
-    let(:sf_class){ double("sf_class", sf_type: "sf_type", resource_id_name: "resource_id_name") }
-    let(:resource){ double("resource", id: 1234) }
+    let(:sf_type){ "sf_type" }
+    let(:sf_class){ double("sf_class", sf_type: sf_type, resource_id_name: "resource_id_name") }
+    let(:resource){ double("resource", id: 1234, email: "joe@bloggs.com") }
     let(:all_prepared_fields){ { f1: "f1", f2: "f2" } }
     let(:sf_resource){ double("sf_resource", all_prepared_fields: all_prepared_fields, resource: resource) }
     let(:salesforce_id){ "sf_id" }
+    let(:sf_record){ double("sf_record") }
+    let(:synchronised?){ true }
+    let(:query){ "query" }
+    let(:collection){ [] }
 
     before do
       allow_any_instance_of(described_class).to receive(:client).and_return(client)
       allow(sf_class).to receive(:new).and_return(sf_resource)
-      allow(client).to receive(:upsert!).with("sf_type", "resource_id_name", all_prepared_fields).and_return(salesforce_id)
+      allow(client).to receive(:upsert!).with(sf_type, "resource_id_name", all_prepared_fields).and_return(salesforce_id)
       allow(sf_resource).to receive(:store_salesforce_id).with(salesforce_id)
       allow(sf_resource).to receive(:after_upsert)
+      allow(sf_resource).to receive(:synchronised?).and_return(synchronised?)
+      allow(described_class).to receive(:select).with(query).and_return(collection)
+      allow(sf_record).to receive(:[]).with(:Id).and_return(salesforce_id)
     end
 
     context "when the resource is present" do
-      it "upserts, stores the salesforce id and call after upsert" do
-        described_class.new(sf_class, resource.id).upsert
+      context "when synchronised (has identifier)" do
+        it "upserts, stores the salesforce id and call after upsert" do
+          described_class.new(sf_class, resource.id).upsert
 
-        expect(client).to have_received(:upsert!).with("sf_type", "resource_id_name", all_prepared_fields)
-        expect(sf_resource).to have_received(:store_salesforce_id).with(salesforce_id)
-        expect(sf_resource).to have_received(:after_upsert)
+          expect(client).to have_received(:upsert!).with("sf_type", "resource_id_name", all_prepared_fields)
+          expect(sf_resource).to have_received(:store_salesforce_id).with(salesforce_id)
+          expect(sf_resource).to have_received(:after_upsert)
+        end
+      end
+
+      context "when not synchronised (has no identifier)" do
+        let(:synchronised?){ false }
+
+        context "when it is not a User" do
+          let(:sf_type){ "Account" }
+
+          it "upserts, stores the salesforce id and call after upsert" do
+            described_class.new(sf_class, resource.id).upsert
+
+            expect(client).to have_received(:upsert!).with(sf_type, "resource_id_name", all_prepared_fields)
+            expect(sf_resource).to have_received(:store_salesforce_id).with(salesforce_id)
+            expect(sf_resource).to have_received(:after_upsert)
+          end
+        end
+
+        context "when it is a User (Contact)" do
+          let(:sf_type){ "#{described_class::SF_USER_QUERY_TYPE}" }
+          let(:query){ "select Id from #{sf_type} where email = '#{sf_resource.resource.email}' AND State__c != 'disabled'" }
+
+          context "where there are no matching users in salesforce" do
+            it "calls the select method" do
+              described_class.new(sf_class, resource.id).upsert
+
+              expect(described_class).to have_received(:select).with(query)
+            end
+
+            it "upserts, stores the salesforce id and call after upsert" do
+              described_class.new(sf_class, resource.id).upsert
+
+              expect(client).to have_received(:upsert!).with(sf_type, "resource_id_name", all_prepared_fields)
+              expect(sf_resource).to have_received(:store_salesforce_id).with(salesforce_id)
+              expect(sf_resource).to have_received(:after_upsert)
+            end
+          end
+
+          context "where there is one matching user in salesforce" do
+            let(:sf_type){ "#{described_class::SF_USER_QUERY_TYPE}" }
+            let(:update_params){ all_prepared_fields.merge(Id: salesforce_id) }
+
+            before do
+              collection << sf_record
+              allow(client).to receive(:update!).with(sf_type, update_params)
+            end
+
+            it "makes API call to update user on salesforce" do
+              described_class.new(sf_class, resource.id).upsert
+
+              expect(client).to have_received(:update!).with(sf_type, update_params)
+            end
+
+            it "does not raise error" do
+              expect{
+                described_class.new(sf_class, resource.id).upsert
+              }.not_to raise_error
+            end
+
+            it "updates the salesforce identifier" do
+              described_class.new(sf_class, resource.id).upsert
+
+              expect(sf_resource).to have_received(:store_salesforce_id).with(salesforce_id)
+            end
+          end
+
+          context "where there are multiple matching users in salesforce" do
+            it "raises error" do
+              collection << sf_record << sf_record
+              dups = collection.collect{ |c| c[:Id] }
+              message = "#{described_class} : #{described_class::SF_USER_QUERY_TYPE}: #{sf_resource.resource.id}, found duplicates: #{dups}"
+
+              expect{
+                described_class.new(sf_class, resource.id).upsert
+              }.to raise_error(RuntimeError).with_message(message)
+            end
+          end
+        end
       end
     end
 
     context "when the resource is not present" do
       let(:resource){ nil }
+      let(:message){ "#{described_class} : Missing record: #{sf_class.sf_type}" }
 
-      it "does not upsert the resource, does not store the salesforce id and does not call after upsert" do
-        described_class.new(sf_class, 1234).upsert
-
-        expect(client).not_to have_received(:upsert!)
-        expect(sf_resource).not_to have_received(:store_salesforce_id)
-        expect(sf_resource).not_to have_received(:after_upsert)
+      it "raises error" do
+        expect{
+          described_class.new(sf_class, nil).upsert
+        }.to raise_error(RuntimeError).with_message(message)
       end
     end
   end
